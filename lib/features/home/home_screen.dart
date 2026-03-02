@@ -5,11 +5,10 @@ import '../../core/widgets/common_widgets.dart';
 import '../../core/widgets/mini_player.dart';
 import '../../data/models/models.dart';
 import '../../providers/player_provider.dart';
-import '../player/player_screen.dart';
 import '../library/library_screen.dart';
 import 'dart:ui';
 
-/// Main home / browse screen — image_0.png
+/// Main home / browse screen — Music_Discovery_Home_Screen_1.png
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -41,30 +40,20 @@ class _HomeScreenState extends State<HomeScreen> {
       body: GradientBackground(
         child: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    // Top bar
-                    SliverToBoxAdapter(child: _buildTopBar()),
-                    // Categories
-                    SliverToBoxAdapter(child: _buildCategories()),
-                    // Discover weekly carousel
-                    SliverToBoxAdapter(child: _buildDiscoverCarousel()),
-                    // Top daily playlists
-                    SliverToBoxAdapter(child: _buildPlaylistsHeader()),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => _buildPlaylistItem(
-                            AppData.topDailyPlaylists[index], index),
-                        childCount: AppData.topDailyPlaylists.take(3).length,
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 180)),
-                  ],
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildTopBar()),
+              SliverToBoxAdapter(child: _buildCategories()),
+              SliverToBoxAdapter(child: _buildDiscoverCarousel()),
+              SliverToBoxAdapter(child: _buildPlaylistsHeader()),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildPlaylistItem(
+                      AppData.topDailyPlaylists[index], index),
+                  childCount: 3,
                 ),
               ),
+              const SliverToBoxAdapter(child: SizedBox(height: 180)),
             ],
           ),
         ),
@@ -78,7 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
-          // Avatar
           Container(
             width: 44,
             height: 44,
@@ -103,9 +91,10 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Hi, Samantha',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               Text(
                 'Good evening',
@@ -157,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       {
         'title': 'Top Charts',
-        'subtitle': 'What\'s hot right now',
+        'subtitle': "What's hot right now",
         'desc': 'The biggest hits from around\nthe world this week.',
         'imageUrl': 'https://picsum.photos/seed/topcharts/300/300',
       },
@@ -179,10 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: carouselItems.length,
             onPageChanged: (i) => setState(() => _currentCarouselPage = i),
             itemBuilder: (context, index) {
-              final item = carouselItems[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _buildDiscoverCard(item),
+                child: _buildDiscoverCard(carouselItems[index]),
               );
             },
           ),
@@ -221,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6B3FA0).withOpacity(0.4),
+            color: const Color(0xFF6B3FA0).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -229,7 +217,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Stack(
         children: [
-          // Blurred artist circle image
           Positioned(
             left: 12,
             top: 12,
@@ -240,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 10,
                   ),
                 ],
@@ -251,14 +238,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: const Color(0xFF8060B0),
-                    child: const Icon(Icons.headphones,
-                        color: Colors.white, size: 40),
+                    child: const Icon(
+                      Icons.headphones,
+                      color: Colors.white,
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          // Text content
           Positioned(
             right: 16,
             top: 20,
@@ -267,10 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   item['subtitle']!,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -286,26 +272,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   item['desc']!,
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: Colors.white60, fontSize: 11),
                 ),
               ],
             ),
           ),
-          // Bottom actions
           Positioned(
             bottom: 14,
             left: 14,
             right: 14,
             child: Row(
               children: [
-                // Play button
                 GestureDetector(
                   onTap: () {
-                    final p = context.read<PlayerProvider>();
-                    p.setDemoSong();
+                    context.read<PlayerProvider>().setDemoSong();
                   },
                   child: Container(
                     width: 40,
@@ -315,13 +295,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.limeGreen.withOpacity(0.5),
+                          color: AppColors.limeGreen.withValues(alpha: 0.5),
                           blurRadius: 12,
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.play_arrow_rounded,
-                        color: Colors.black, size: 24),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.black,
+                      size: 24,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -378,7 +361,6 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
         child: Row(
           children: [
-            // Cover art
             Container(
               width: 56,
               height: 56,
@@ -391,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Image.network(
                   playlist.coverArt,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Icon(
+                  errorBuilder: (_, __, ___) => const Icon(
                     Icons.music_note,
                     color: Colors.white,
                     size: 28,
@@ -400,7 +382,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 14),
-            // Text
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +405,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            // Play button
             Container(
               width: 36,
               height: 36,
@@ -462,19 +442,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   _NavItem(
                     icon: Icons.home_rounded,
                     isActive: _selectedNavIndex == 0,
-                    label: 'Home',
                     onTap: () => setState(() => _selectedNavIndex = 0),
                   ),
                   _NavItem(
                     icon: Icons.search_rounded,
                     isActive: _selectedNavIndex == 1,
-                    label: 'Search',
                     onTap: () => setState(() => _selectedNavIndex = 1),
                   ),
                   _NavItem(
                     icon: Icons.library_music_rounded,
                     isActive: _selectedNavIndex == 2,
-                    label: 'Library',
                     onTap: () {
                       setState(() => _selectedNavIndex = 2);
                       Navigator.push(
@@ -487,7 +464,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _NavItem(
                     icon: Icons.settings_rounded,
                     isActive: _selectedNavIndex == 3,
-                    label: 'Settings',
                     onTap: () => setState(() => _selectedNavIndex = 3),
                   ),
                 ],
@@ -503,13 +479,11 @@ class _HomeScreenState extends State<HomeScreen> {
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final bool isActive;
-  final String label;
   final VoidCallback? onTap;
 
   const _NavItem({
     required this.icon,
     required this.isActive,
-    required this.label,
     this.onTap,
   });
 
@@ -522,7 +496,7 @@ class _NavItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.limeGreen.withOpacity(0.15)
+              ? AppColors.limeGreen.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -546,7 +520,7 @@ class _ActionIcon extends StatelessWidget {
     return Container(
       width: 30,
       height: 30,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white10,
         shape: BoxShape.circle,
       ),

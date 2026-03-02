@@ -1,0 +1,9 @@
+Analyzing Flutter_music_App...                                  
+
+  error - Target of URI doesn't exist: '../player/player_screen.dart' - lib\core\widgets\mini_player.dart:5:8 - uri_does_not_exist
+  error - The name 'PlayerScreen' isn't a class - lib\core\widgets\mini_player.dart:22:51 - creation_with_non_type
+warning - Unused import: '../player/player_screen.dart' - lib\features\home\home_screen.dart:8:8 - unused_import
+  error - The getter 'white20' isn't defined for the type 'Colors' - lib\features\player\player_screen.dart:250:42 - undefined_getter
+   info - The private field _userAvatar could be 'final' - lib\providers\player_provider.dart:74:10 - prefer_final_fields
+
+5 issues found. (ran in 25.3s)

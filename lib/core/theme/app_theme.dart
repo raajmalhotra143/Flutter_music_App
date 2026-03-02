@@ -38,7 +38,6 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.limeGreen,
         brightness: Brightness.dark,
-        background: AppColors.backgroundDark,
         surface: AppColors.cardDark,
         primary: AppColors.limeGreen,
         onPrimary: Colors.black,

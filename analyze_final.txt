@@ -1,0 +1,11 @@
+Analyzing Flutter_music_App...                                  
+
+   info - The private field _userAvatar could be 'final' - lib\providers\player_provider.dart:74:10 - prefer_final_fields
+
+flutter : 1 issue found. (ran in 12.8s)
+At line:1 char:1
++ flutter analyze --no-pub 2>&1 | ForEach-Object { $_ } | Out-File -Enc ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo              : NotSpecified: (1 issue     found. (ran in 12.8s):S    tring) [], RemoteExcepti    on
+    + FullyQualifiedErrorId     : NativeCommandError
+ 

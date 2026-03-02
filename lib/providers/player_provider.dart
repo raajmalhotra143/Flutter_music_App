@@ -71,7 +71,7 @@ class PlayerProvider extends ChangeNotifier {
 class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
   String _userName = 'Samantha';
-  String _userAvatar = 'https://picsum.photos/seed/samantha/100/100';
+  final String _userAvatar = 'https://picsum.photos/seed/samantha/100/100';
 
   bool get isLoggedIn => _isLoggedIn;
   String get userName => _userName;

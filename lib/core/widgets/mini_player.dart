@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/player_provider.dart';
-import '../player/player_screen.dart';
+import '../../features/player/player_screen.dart';
 import 'dart:ui';
 
 /// Persistent mini-player shown above bottom nav when a song is playing
@@ -48,8 +48,11 @@ class MiniPlayer extends StatelessWidget {
                         width: 46,
                         height: 46,
                         color: AppColors.cardMid,
-                        child: const Icon(Icons.music_note,
-                            color: Colors.white70, size: 22),
+                        child: const Icon(
+                          Icons.music_note,
+                          color: Colors.white70,
+                          size: 22,
+                        ),
                       ),
                     ),
                   ),
@@ -101,7 +104,7 @@ class MiniPlayer extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.limeGreen.withOpacity(0.4),
+                            color: AppColors.limeGreen.withValues(alpha: 0.4),
                             blurRadius: 8,
                           ),
                         ],

@@ -6,13 +6,11 @@ import 'dart:ui';
 class GradientBackground extends StatelessWidget {
   final Widget child;
   final List<Color>? colors;
-  final List<Alignment>? alignments;
 
   const GradientBackground({
     super.key,
     required this.child,
     this.colors,
-    this.alignments,
   });
 
   @override
@@ -104,7 +102,7 @@ class PlayButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.limeGreen.withOpacity(0.4),
+              color: AppColors.limeGreen.withValues(alpha: 0.4),
               blurRadius: 12,
               spreadRadius: 2,
             ),
