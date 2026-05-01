@@ -5,6 +5,8 @@ import '../../core/widgets/common_widgets.dart';
 import '../../core/widgets/mini_player.dart';
 import '../../data/models/models.dart';
 import '../../providers/player_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../data/services/yt_music_service.dart';
 import '../library/library_screen.dart';
 import 'dart:ui';
 
@@ -23,10 +25,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<String> _categories = ['All', 'New Release', 'Trending', 'Top'];
   final PageController _carouselController = PageController();
+  final YouTubeMusicService _ytService = YouTubeMusicService();
+  List<SongModel> _newReleases = [];
+  bool _isLoadingReleases = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReleases();
+  }
+
+  Future<void> _fetchReleases() async {
+    final releases = await _ytService.getNewReleases();
+    if (mounted) {
+      setState(() {
+        _newReleases = releases;
+        _isLoadingReleases = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
     _carouselController.dispose();
+    _ytService.dispose();
     super.dispose();
   }
 
@@ -63,24 +85,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTopBar() {
+    final auth = context.watch<AuthProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.glassBorder, width: 2),
-            ),
-            child: ClipOval(
-              child: Image.network(
-                'https://picsum.photos/seed/samantha/100/100',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: AppColors.cardMid,
-                  child: const Icon(Icons.person, color: Colors.white70),
+          GestureDetector(
+            onTap: () => auth.logout(),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.glassBorder, width: 2),
+              ),
+              child: ClipOval(
+                child: Image.network(
+                  auth.userAvatar,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppColors.cardMid,
+                    child: const Icon(Icons.person, color: Colors.white70),
+                  ),
                 ),
               ),
             ),
@@ -90,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, Samantha',
+                'Hi, ${auth.userName}',
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge
@@ -137,26 +163,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDiscoverCarousel() {
-    final carouselItems = [
-      {
-        'title': 'Discover Weekly',
-        'subtitle': 'Curated & trending',
-        'desc': 'The original slow instrumental\nbest playlists.',
-        'imageUrl': 'https://picsum.photos/seed/starlitwk/300/300',
-      },
-      {
-        'title': 'Top Charts',
-        'subtitle': "What's hot right now",
-        'desc': 'The biggest hits from around\nthe world this week.',
-        'imageUrl': 'https://picsum.photos/seed/topcharts/300/300',
-      },
-      {
-        'title': 'Chill Vibes',
-        'subtitle': 'Relax & unwind',
-        'desc': 'Perfect background music\nfor your day.',
-        'imageUrl': 'https://picsum.photos/seed/chillvibes/300/300',
-      },
-    ];
+    if (_isLoadingReleases) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator(color: AppColors.limeGreen)),
+      );
+    }
+
+    if (_newReleases.isEmpty) {
+      return const SizedBox(
+        height: 200,
+        child: Center(child: Text('No new releases found')),
+      );
+    }
 
     return Column(
       children: [
@@ -165,12 +184,12 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 200,
           child: PageView.builder(
             controller: _carouselController,
-            itemCount: carouselItems.length,
+            itemCount: _newReleases.length,
             onPageChanged: (i) => setState(() => _currentCarouselPage = i),
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _buildDiscoverCard(carouselItems[index]),
+                child: _buildDiscoverCardFromSong(_newReleases[index]),
               );
             },
           ),
@@ -179,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
-            carouselItems.length,
+            _newReleases.length,
             (i) => AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -198,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDiscoverCard(Map<String, String> item) {
+  Widget _buildDiscoverCardFromSong(SongModel song) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -234,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: ClipOval(
                 child: Image.network(
-                  item['imageUrl']!,
+                  song.albumArt,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     color: const Color(0xFF8060B0),
@@ -254,23 +273,28 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  item['subtitle']!,
-                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                const Text(
+                  'New Release',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  item['title']!,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                SizedBox(
+                  width: 150,
+                  child: Text(
+                    song.title,
+                    textAlign: TextAlign.right,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  item['desc']!,
+                  song.artist,
                   textAlign: TextAlign.right,
                   style: const TextStyle(color: Colors.white60, fontSize: 11),
                 ),
@@ -285,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    context.read<PlayerProvider>().setDemoSong();
+                    context.read<PlayerProvider>().playSong(song);
                   },
                   child: Container(
                     width: 40,
@@ -308,11 +332,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                _ActionIcon(icon: Icons.favorite_border_rounded),
+                const _ActionIcon(icon: Icons.favorite_border_rounded),
                 const SizedBox(width: 10),
-                _ActionIcon(icon: Icons.download_rounded),
+                const _ActionIcon(icon: Icons.download_rounded),
                 const SizedBox(width: 10),
-                _ActionIcon(icon: Icons.more_horiz_rounded),
+                const _ActionIcon(icon: Icons.more_horiz_rounded),
               ],
             ),
           ),

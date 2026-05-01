@@ -33,7 +33,10 @@
       "args": [
         "-y",
         "@supabase/mcp-server-supabase"
-      ]
+      ],
+      "env": {
+        "SUPABASE_PERSONAL_ACCESS_TOKEN": "sbp_33182b7e6247c2ed6d2b5650b6e4d6549a50cd0"
+      }
     }
   }
 }

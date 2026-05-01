@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_widgets.dart';
-import '../../providers/player_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../home/home_screen.dart';
 
 /// Welcome Back screen (Music_Discovery_Home_Screen_4.png) - Standard login
@@ -41,12 +41,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     final auth = context.read<AuthProvider>();
-    auth.login(_emailController.text, _passwordController.text);
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    try {
+      await auth.login(_emailController.text, _passwordController.text);
+      // No manual navigation here; Consumer in main.dart will handle it
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   @override
@@ -192,6 +198,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    );
+                  },
+                  child: const Text(
+                    'Skip Auth (Dev Mode)',
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  ),
+                ),
               ],
             ),
           ),
@@ -260,6 +279,20 @@ class _SignInScreenState extends State<SignInScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.signUp(_emailController.text, _passwordController.text);
+      // No manual navigation here; Consumer in main.dart will handle it
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign up failed: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   @override
@@ -426,14 +459,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (_) => const HomeScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Text('Sign In'),
+                              onPressed: _signUp,
+                              child: const Text('Create Account'),
                             ),
                           ),
                         ],

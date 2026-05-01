@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../data/models/models.dart';
+import '../data/services/yt_music_service.dart';
 
-/// PlayerProvider manages global audio playback state
+/// PlayerProvider manages global audio playback state using just_audio and YT streaming
 class PlayerProvider extends ChangeNotifier {
+  final AudioPlayer _player = AudioPlayer();
+  final YouTubeMusicService _ytService = YouTubeMusicService();
+
   SongModel? _currentSong;
   bool _isPlaying = false;
   bool _isShuffle = false;
   bool _isRepeat = false;
-  double _progress = 0.28 / 2.43; // 0:28 of 2:43 for demo
-  Duration _currentPosition = const Duration(seconds: 28);
-  Duration _totalDuration = const Duration(minutes: 2, seconds: 43);
+  double _progress = 0.0;
+  Duration _currentPosition = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+
+  PlayerProvider() {
+    _player.positionStream.listen((pos) {
+      _currentPosition = pos;
+      if (_totalDuration.inMilliseconds > 0) {
+        _progress = pos.inMilliseconds / _totalDuration.inMilliseconds;
+      }
+      notifyListeners();
+    });
+
+    _player.durationStream.listen((dur) {
+      if (dur != null) {
+        _totalDuration = dur;
+        notifyListeners();
+      }
+    });
+
+    _player.playerStateStream.listen((state) {
+      _isPlaying = state.playing;
+      notifyListeners();
+    });
+  }
 
   SongModel? get currentSong => _currentSong;
   bool get isPlaying => _isPlaying;
@@ -20,44 +47,50 @@ class PlayerProvider extends ChangeNotifier {
   Duration get totalDuration => _totalDuration;
   bool get hasSong => _currentSong != null;
 
-  void playSong(SongModel song) {
+  Future<void> playSong(SongModel song) async {
     _currentSong = song;
-    _isPlaying = true;
-    _progress = 0.0;
-    _currentPosition = Duration.zero;
     notifyListeners();
+
+    try {
+      final streamUrl = await _ytService.getAudioStreamUrl(song.id);
+      if (streamUrl != null) {
+        await _player.setUrl(streamUrl);
+        await _player.play();
+      }
+    } catch (e) {
+      print('Error playing song: $e');
+    }
   }
 
-  void togglePlayPause() {
-    _isPlaying = !_isPlaying;
-    notifyListeners();
+  Future<void> togglePlayPause() async {
+    if (_isPlaying) {
+      await _player.pause();
+    } else {
+      await _player.play();
+    }
   }
 
   void toggleShuffle() {
     _isShuffle = !_isShuffle;
+    _player.setShuffleModeEnabled(_isShuffle);
     notifyListeners();
   }
 
   void toggleRepeat() {
     _isRepeat = !_isRepeat;
+    _player.setLoopMode(_isRepeat ? LoopMode.one : LoopMode.off);
     notifyListeners();
   }
 
-  void seekTo(double value) {
-    _progress = value.clamp(0.0, 1.0);
-    _currentPosition = Duration(
-      milliseconds: (_totalDuration.inMilliseconds * _progress).round(),
+  Future<void> seekTo(double value) async {
+    final target = Duration(
+      milliseconds: (_totalDuration.inMilliseconds * value).round(),
     );
-    notifyListeners();
+    await _player.seek(target);
   }
 
-  void setDemoSong() {
-    _currentSong = AppData.currentlyPlayingSong;
-    _isPlaying = true;
-    _progress = 0.28 / 2.43;
-    _currentPosition = const Duration(seconds: 28);
-    _totalDuration = const Duration(minutes: 2, seconds: 43);
-    notifyListeners();
+  Future<void> setDemoSong() async {
+    await playSong(AppData.currentlyPlayingSong);
   }
 
   String formatDuration(Duration d) {
@@ -65,27 +98,12 @@ class PlayerProvider extends ChangeNotifier {
     final seconds = d.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
-}
 
-/// AuthProvider manages authentication state
-class AuthProvider extends ChangeNotifier {
-  bool _isLoggedIn = false;
-  String _userName = 'Samantha';
-  final String _userAvatar = 'https://picsum.photos/seed/samantha/100/100';
-
-  bool get isLoggedIn => _isLoggedIn;
-  String get userName => _userName;
-  String get userAvatar => _userAvatar;
-
-  void login(String email, String password) {
-    // Demo login
-    _isLoggedIn = true;
-    _userName = 'Samantha';
-    notifyListeners();
-  }
-
-  void logout() {
-    _isLoggedIn = false;
-    notifyListeners();
+  @override
+  void dispose() {
+    _player.dispose();
+    _ytService.dispose();
+    super.dispose();
   }
 }
+
